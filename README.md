@@ -27,3 +27,19 @@ an exact integer subtotal in cents. For example, `order_subtotal(199, 3)` return
 integers: negative values raise `ValueError`, while non-integers (including
 booleans) raise `TypeError`. Invalid prices are still rejected when quantity is
 zero. The function uses only Python's standard library.
+
+## Adding amounts in cents
+
+`smoke_demo.addition.add_cents(left, right)` adds two non-negative integer
+amounts in cents without rounding:
+
+```python
+from smoke_demo.addition import add_cents
+
+add_cents(199, 250)  # 449 cents
+add_cents(0, 199)    # 199 cents
+```
+
+Negative integers raise `ValueError`. Non-integers, including booleans, raise
+`TypeError` in either argument. The existing `add(left, right)` function keeps
+its original behavior.
