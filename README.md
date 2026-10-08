@@ -52,6 +52,22 @@ All three arguments must be non-negative integers: negative values raise
 `ValueError`, and non-integers (including booleans) raise `TypeError`, even when
 shipping would otherwise be free. A zero threshold makes shipping free.
 
+## Adding amounts in cents
+
+`smoke_demo.addition.add_cents(left, right)` adds two non-negative integer
+amounts in cents without rounding:
+
+```python
+from smoke_demo.addition import add_cents
+
+add_cents(199, 250)  # 449 cents
+add_cents(0, 199)    # 199 cents
+```
+
+Negative integers raise `ValueError`. Non-integers, including booleans, raise
+`TypeError` in either argument. The existing `add(left, right)` function keeps
+its original behavior.
+
 ## Cents formatting fixture
 
 `smoke_demo.format_cents.format_cents(amount_cents)` converts integer cents to
