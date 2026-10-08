@@ -83,6 +83,12 @@ class QuoteHandler(BaseHTTPRequestHandler):
         self.request.settimeout(REQUEST_TIMEOUT_SECONDS)
         super().setup()
 
+    def handle(self):
+        try:
+            super().handle()
+        except OSError:
+            pass  # Disconnected clients must not trigger address-bearing logs.
+
     def log_message(self, format, *args):
         """Do not retain request URLs, bodies, or client addresses in logs."""
 
@@ -96,32 +102,29 @@ class QuoteHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.close_connection = True
         if self.command != "HEAD":
-            try:
-                self.wfile.write(body)
-            except OSError:
-                pass  # A disconnected client must not interrupt the service.
+            self.wfile.write(body)
 
     def send_error(self, code, message=None, explain=None):
         # Keep malformed HTTP errors JSON and avoid reflecting request data.
         self.respond(code, {"error": "invalid HTTP request"})
 
     def route(self):
-        if self.path not in ("/health", "/quote"):
+        # BaseHTTPRequestHandler normalizes leading //; match the actual target.
+        path = self.requestline.split()[1]
+        if path not in ("/health", "/quote"):
             self.respond(404, {"error": "not found"})
-        elif self.path == "/health" and self.command == "GET":
+        elif path == "/health" and self.command == "GET":
             self.respond(200, {"status": "ok"})
-        elif self.path == "/quote" and self.command == "POST":
+        elif path == "/quote" and self.command == "POST":
             self.quote()
         else:
             self.respond(405, {"error": "method not allowed"})
 
-    do_GET = route
-    do_POST = route
-    do_PUT = route
-    do_DELETE = route
-    do_PATCH = route
-    do_HEAD = route
-    do_OPTIONS = route
+    def __getattr__(self, name):
+        # Route every HTTP verb through the same 404/405 contract.
+        if name.startswith("do_"):
+            return self.route
+        raise AttributeError(name)
 
     def quote(self):
         try:

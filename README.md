@@ -1,12 +1,13 @@
-# Disposable workflow smoke test
+# Integer-cent helpers and local quote previews
 
-This repository contains synthetic, disposable test fixtures for checking a
-branch / pull-request / continuous-integration workflow. These examples are not
-business requirements, a production application, or a deployment target.
+This repository contains exact integer-cent helpers, a runnable amount example,
+and a local HTTP quote preview service. Everything uses Python's standard library;
+there are no third-party dependencies or external services.
 
-The baseline contains an import smoke test. Task A adds integer addition and its
-tests. Task B independently adds integer subtraction and its tests. Both tasks
-start from the same baseline so their integration can be tested separately.
+The repository began as disposable branch / pull-request / continuous-integration
+fixtures. The original arithmetic examples remain covered by regression tests.
+The quote service previews totals locally; it does not place orders or deploy a
+production application.
 
 Run the standard-library-only test suite with Python 3.12:
 

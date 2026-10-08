@@ -8,6 +8,7 @@ from pathlib import Path
 import queue
 import signal
 import socket
+import struct
 import subprocess
 import sys
 import tempfile
@@ -174,11 +175,38 @@ class QuoteHTTPTests(unittest.TestCase):
                 self.assert_bad(raw=b"", headers={"Content-Length": length})
 
     def test_unknown_paths_are_404(self):
-        for method in ("GET", "POST", "PUT", "DELETE"):
+        for method in ("GET", "POST", "PUT", "DELETE", "TRACE", "CUSTOM"):
             with self.subTest(method=method):
                 status, result = self.request(method, "/unknown")
                 self.assertEqual(status, 404)
                 self.assertEqual(result, {"error": "not found"})
+
+    def test_unsupported_methods_on_known_paths_are_405(self):
+        for method, path in (("GET", "/quote"), ("POST", "/health"),
+                             ("TRACE", "/quote"), ("CUSTOM", "/health")):
+            with self.subTest(method=method, path=path):
+                self.assertEqual(self.request(method, path),
+                                 (405, {"error": "method not allowed"}))
+
+    def test_paths_match_exactly(self):
+        for path in ("//health", "/health/", "/health?query=1"):
+            with self.subTest(path=path):
+                self.assertEqual(self.request("GET", path)[0], 404)
+
+    @unittest.skipUnless(os.name == "posix", "RST uses POSIX SO_LINGER layout")
+    def test_reset_clients_do_not_log_client_data(self):
+        for request in (b"GET /health HTTP/1.1\r\nHost: localhost\r\n\r\n",
+                        b"GET /health HTTP/1.1\r\nHost: "):
+            for _ in range(10):
+                with socket.create_connection(("127.0.0.1", self.port), timeout=3) as client:
+                    client.sendall(request)
+                    client.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack("ii", 1, 0))
+                self.assertEqual(self.request("GET", "/health")[0], 200)
+        self.process.terminate()
+        stdout, stderr = self.process.communicate(timeout=5)
+        self.assertEqual(self.process.returncode, 0)
+        self.assertEqual(stdout, "")
+        self.assertEqual(stderr, "")
 
     def test_bad_request_does_not_stop_next_request(self):
         self.assert_bad(raw=b"{")
