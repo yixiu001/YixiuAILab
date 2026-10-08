@@ -18,3 +18,12 @@ The GitHub Actions workflow runs this command for pull requests targeting
 `develop` and pushes to `develop`. It has read-only repository permissions,
 does not persist checkout credentials, and has no production or deployment step.
 No application secrets or third-party Python packages are needed.
+
+## Order subtotal fixture
+
+`smoke_demo.order_subtotal.order_subtotal(unit_price_cents, quantity)` returns
+an exact integer subtotal in cents. For example, `order_subtotal(199, 3)` returns
+`597`, and a zero quantity returns `0`. Both arguments must be non-negative
+integers: negative values raise `ValueError`, while non-integers (including
+booleans) raise `TypeError`. Invalid prices are still rejected when quantity is
+zero. The function uses only Python's standard library.
