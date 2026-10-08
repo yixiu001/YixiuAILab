@@ -1,0 +1,2 @@
+Isolated fast-forward rejection fixture B
+Base: 884d41ce7a7fa12e9e1de9454ba8300c3f86b1dc
