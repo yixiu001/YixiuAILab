@@ -2,9 +2,9 @@ name: Workflow smoke
 
 on:
   pull_request:
-    branches: [develop]
+    branches: [develop, 'lab/kit-unprotected-base-20261008-1924']
   push:
-    branches: [develop]
+    branches: [develop, 'lab/kit-unprotected-base-20261008-1924']
 
 permissions:
   contents: read
