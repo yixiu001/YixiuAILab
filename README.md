@@ -204,3 +204,54 @@ python -B -m unittest discover -s tests -v
 
 The new tests use OS-assigned loopback ports, bounded request/process timeouts,
 and cleanup scoped to subprocesses they created. They do not use port `8000`.
+
+## Local CSV quote previews
+
+For a local file, run `quote_csv.py` without starting the HTTP service. It reads
+only that file, does not use the network or upload data, and reuses the HTTP
+service's existing quote calculation and exact JSON encoder. HTTP behavior is
+unchanged. Python 3.12 and its standard library are sufficient.
+
+From the repository root, this copyable POSIX shell example creates synthetic
+input and prints a quote:
+
+```sh
+printf 'unit_price_cents,quantity\n199,3\n250,2\n' > '合成报价.csv'
+python -B quote_csv.py '合成报价.csv' \
+  --shipping-fee-cents 500 \
+  --free-shipping-threshold-cents 5000
+```
+
+The minimal CSV content is:
+
+```csv
+unit_price_cents,quantity
+199,3
+250,2
+```
+
+Expected stdout (one JSON object followed by a newline):
+
+```json
+{"subtotal_cents":1097,"shipping_cents":500,"total_cents":1597,"formatted_total":"15.97"}
+```
+
+Both shipping arguments are required and use non-negative integer cents.
+Shipping is free at or above the threshold, including a zero threshold.
+Zero quantities and prices are valid. Large integer amounts remain exact.
+An absolute script path works from another directory; the CSV path is relative
+to your current directory, or can also be absolute. Quote paths containing spaces.
+
+The CSV must be UTF-8 (an optional BOM is accepted) and have the exact column
+names `unit_price_cents` and `quantity`, in either order. Additional named columns
+are ignored. Standard CSV quoting and CRLF line endings are supported; blank
+lines are skipped. Integer values allow surrounding whitespace and leading
+zeros, but must otherwise be ASCII digits: negatives, decimal fractions,
+exponents, underscores, booleans, and empty cells are rejected.
+
+Missing or duplicate columns, inconsistent row widths, malformed CSV, invalid
+UTF-8, unreadable paths, and empty/header-only files produce a short error on
+stderr and a nonzero exit, with no quote on stdout or traceback. Cell errors
+identify the physical row number and field without echoing the input value.
+The file is never modified, and the command creates no output data files.
+Use `python -B quote_csv.py --help` for the arguments.
