@@ -69,6 +69,28 @@ Negative integers raise `ValueError`. Non-integers, including booleans, raise
 `TypeError` in either argument. The existing `add(left, right)` function keeps
 its original behavior.
 
+## Deducting discounts in cents
+
+`smoke_demo.discount_cents.discount_cents(amount_cents, discount_cents)` deducts
+a discount from an amount in exact integer cents. The result is `0` when the
+discount equals or exceeds the amount:
+
+```python
+from smoke_demo.discount_cents import discount_cents
+
+discount_cents(1999, 500)  # 1499 cents
+discount_cents(500, 500)   # 0 cents
+discount_cents(500, 700)   # 0 cents
+discount_cents(1999, 0)    # 1999 cents
+discount_cents(0, 500)     # 0 cents
+discount_cents(9007199254740993, 2)  # 9007199254740991 cents, exactly
+```
+
+Both arguments must be non-negative integers. Negative integers raise
+`ValueError`; non-integers, including booleans, raise `TypeError`. Both inputs
+are validated even when the result would be zero. Integer arithmetic preserves
+large amounts without floating-point conversion or rounding.
+
 ## Cents formatting fixture
 
 `smoke_demo.format_cents.format_cents(amount_cents)` converts integer cents to
