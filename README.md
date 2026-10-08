@@ -80,3 +80,46 @@ using floating-point arithmetic; `format_cents(9007199254740993)` returns
 `"90071992547409.93"` exactly. No currency symbol or grouping separator is added.
 Decimal output is assembled in small chunks, so even amounts exceeding Python's
 default integer-to-string digit limit work without changing global settings.
+
+## Project flow illustration
+
+![Project flow illustration showing three connected stages](docs/images/project-flow.png)
+
+The illustration accompanies the example's flow: calculate integer-cent
+subtotals, add shipping, and format the resulting amounts as yuan strings.
+
+## Runnable amount example
+
+From the repository root, run the standard-library-only example with Python 3.12:
+
+```sh
+python money_demo.py
+```
+
+On POSIX systems with `python3` available, the script is also directly executable:
+
+```sh
+./money_demo.py
+```
+
+The example combines `order_subtotal`, `sum_values`, `shipping_fee`, `add_cents`,
+and `format_cents`. It shows an order below the free-shipping threshold, one
+exactly at the threshold, and a large amount formatted without precision loss.
+These remain synthetic examples; all calculations use integer cents.
+
+Expected output:
+
+```text
+Standard shipping
+  Subtotal: 10.97 yuan
+  Shipping: 5.00 yuan
+  Total: 15.97 yuan
+Free shipping
+  Subtotal: 50.00 yuan
+  Shipping: 0.00 yuan
+  Total: 50.00 yuan
+Large amount: 90071992547409.93 yuan
+```
+
+The existing unittest command also checks both execution methods, execution
+from another working directory, and importing the example without output.
