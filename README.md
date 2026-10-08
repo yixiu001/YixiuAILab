@@ -19,6 +19,20 @@ The GitHub Actions workflow runs this command for pull requests targeting
 does not persist checkout credentials, and has no production or deployment step.
 No application secrets or third-party Python packages are needed.
 
+## Integer list sum fixture
+
+`smoke_demo.addition.sum_values(values)` sums a list of integers, including
+negative values. An empty list returns `0`. Booleans and non-integer elements
+raise `TypeError`; the input list is left unchanged.
+
+```python
+from smoke_demo.addition import sum_values
+
+sum_values([2, -3, 5])  # 4
+sum_values([])  # 0
+sum_values([1, True])  # raises TypeError
+```
+
 ## Order subtotal fixture
 
 `smoke_demo.order_subtotal.order_subtotal(unit_price_cents, quantity)` returns
@@ -27,6 +41,16 @@ an exact integer subtotal in cents. For example, `order_subtotal(199, 3)` return
 integers: negative values raise `ValueError`, while non-integers (including
 booleans) raise `TypeError`. Invalid prices are still rejected when quantity is
 zero. The function uses only Python's standard library.
+
+## Shipping fee fixture
+
+`smoke_demo.shipping_fee.shipping_fee(cart_subtotal_cents, base_fee_cents,
+free_shipping_threshold_cents)` returns the base fee below the threshold and
+`0` at or above it. For example, `shipping_fee(4999, 500, 5000)` returns `500`,
+while `shipping_fee(5000, 500, 5000)` returns `0`. All amounts are integer cents.
+All three arguments must be non-negative integers: negative values raise
+`ValueError`, and non-integers (including booleans) raise `TypeError`, even when
+shipping would otherwise be free. A zero threshold makes shipping free.
 
 ## Adding amounts in cents
 
