@@ -27,3 +27,17 @@ an exact integer subtotal in cents. For example, `order_subtotal(199, 3)` return
 integers: negative values raise `ValueError`, while non-integers (including
 booleans) raise `TypeError`. Invalid prices are still rejected when quantity is
 zero. The function uses only Python's standard library.
+
+## Division fixture
+
+`smoke_demo.division.divide(a, b)` returns Python's `a / b` result and raises
+`ValueError` when `b` is zero.
+
+```python
+from smoke_demo.division import divide
+
+divide(7, 2)   # 3.5
+divide(-6, 3)  # -2.0
+divide(0, 5)   # 0.0
+divide(5, 0)   # raises ValueError
+```
