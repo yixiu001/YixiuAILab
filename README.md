@@ -123,3 +123,83 @@ Large amount: 90071992547409.93 yuan
 
 The existing unittest command also checks both execution methods, execution
 from another working directory, and importing the example without output.
+
+## Local HTTP quote previews
+
+The existing cent helpers also power a stateless, loopback-only quote preview
+service. It uses Python 3.12's standard library, needs no installation or external
+service, and does not create orders, store customer data, or log requests.
+
+From the repository root:
+
+```sh
+python -B quote_server.py --port 8001
+```
+
+The server binds only `127.0.0.1`. Port `8001` is the default; `--port 0` lets the
+OS choose an available port. The first stdout line is the actual URL, for example
+`http://127.0.0.1:43127`. Use that printed port in requests. An occupied port causes
+a clear error and nonzero exit; the service never stops an existing listener or
+silently picks another port. Keep any existing service on port `8000` untouched.
+An absolute path to `quote_server.py` also works from another directory.
+
+Stop a foreground server with Ctrl+C. On POSIX, SIGTERM to the specific process
+also closes its listener and exits successfully. Do not use broad process-killing
+commands. This local preview service has no authentication or TLS and is not a
+public-facing production HTTP server.
+
+### Requests and responses
+
+`GET /health` returns status `200` and `{"status":"ok"}`.
+
+`POST /quote` accepts a UTF-8 JSON object, with `Content-Length` supplied by your
+HTTP client. Example using the default port:
+
+```sh
+curl --max-time 5 http://127.0.0.1:8001/quote \
+  -H 'Content-Type: application/json' \
+  --data '{"items":[{"unit_price_cents":199,"quantity":3},{"unit_price_cents":250,"quantity":2}],"shipping_fee_cents":500,"free_shipping_threshold_cents":5000}'
+```
+
+Response (`200`):
+
+```json
+{"subtotal_cents":1097,"shipping_cents":500,"total_cents":1597,"formatted_total":"15.97"}
+```
+
+- `items` must contain at least one object. Every item needs `unit_price_cents`
+  and `quantity`.
+- The top-level `shipping_fee_cents` and `free_shipping_threshold_cents` fields
+  are required. They represent the base shipping fee and the free-shipping
+  threshold, respectively.
+- All four numeric input fields must be non-negative JSON integers. Booleans,
+  decimals such as `1.0`, strings, nulls, and negative values are rejected.
+  Zero quantities, zero prices, and zero shipping fees are valid.
+- The existing `order_subtotal`, `shipping_fee`, and `format_cents` functions
+  provide the calculation. Shipping is free when the subtotal reaches or exceeds
+  the threshold; a zero threshold always gives free shipping. Every supplied
+  numeric field is validated even when its result would otherwise be zero.
+- Responses preserve exact integer cents, including amounts beyond JavaScript's
+  safe-integer range. `formatted_total` is a yuan string with two decimal places,
+  without a currency symbol. Clients must use an integer-safe JSON parser if
+  they consume very large numeric fields.
+- Extra fields are ignored. Duplicate JSON keys, nonstandard constants such as
+  `NaN`, malformed JSON, missing fields, and invalid values return `400` with a
+  JSON `error` string. Request bodies must be 1–65,536 bytes; chunked transfer and
+  missing/duplicate/invalid `Content-Length` headers are rejected with `400`.
+- Unknown paths return `404`; unsupported methods on these two paths return
+  `405`. Paths match exactly, without trailing slashes or query strings.
+- Responses include `Cache-Control: no-store`. Connections close after each
+  response, with a five-second socket inactivity timeout. A slow connection
+  does not block other requests. No request bodies, paths, or client addresses
+  are written to logs or application storage.
+
+Run the complete regression suite, including real HTTP requests and process
+lifecycle checks:
+
+```sh
+python -B -m unittest discover -s tests -v
+```
+
+The new tests use OS-assigned loopback ports, bounded request/process timeouts,
+and cleanup scoped to subprocesses they created. They do not use port `8000`.
