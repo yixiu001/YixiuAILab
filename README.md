@@ -19,6 +19,20 @@ The GitHub Actions workflow runs this command for pull requests targeting
 does not persist checkout credentials, and has no production or deployment step.
 No application secrets or third-party Python packages are needed.
 
+## Integer list sum fixture
+
+`smoke_demo.addition.sum_values(values)` sums a list of integers, including
+negative values. An empty list returns `0`. Booleans and non-integer elements
+raise `TypeError`; the input list is left unchanged.
+
+```python
+from smoke_demo.addition import sum_values
+
+sum_values([2, -3, 5])  # 4
+sum_values([])  # 0
+sum_values([1, True])  # raises TypeError
+```
+
 ## Order subtotal fixture
 
 `smoke_demo.order_subtotal.order_subtotal(unit_price_cents, quantity)` returns
