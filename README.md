@@ -41,3 +41,13 @@ an exact integer subtotal in cents. For example, `order_subtotal(199, 3)` return
 integers: negative values raise `ValueError`, while non-integers (including
 booleans) raise `TypeError`. Invalid prices are still rejected when quantity is
 zero. The function uses only Python's standard library.
+
+## Shipping fee fixture
+
+`smoke_demo.shipping_fee.shipping_fee(cart_subtotal_cents, base_fee_cents,
+free_shipping_threshold_cents)` returns the base fee below the threshold and
+`0` at or above it. For example, `shipping_fee(4999, 500, 5000)` returns `500`,
+while `shipping_fee(5000, 500, 5000)` returns `0`. All amounts are integer cents.
+All three arguments must be non-negative integers: negative values raise
+`ValueError`, and non-integers (including booleans) raise `TypeError`, even when
+shipping would otherwise be free. A zero threshold makes shipping free.
