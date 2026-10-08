@@ -67,3 +67,16 @@ add_cents(0, 199)    # 199 cents
 Negative integers raise `ValueError`. Non-integers, including booleans, raise
 `TypeError` in either argument. The existing `add(left, right)` function keeps
 its original behavior.
+
+## Cents formatting fixture
+
+`smoke_demo.format_cents.format_cents(amount_cents)` converts integer cents to
+a yuan string with exactly two decimal places. For example, `format_cents(0)`
+returns `"0.00"`, `format_cents(1)` returns `"0.01"`, and `format_cents(12345)`
+returns `"123.45"`. The input must be a non-negative integer: negative integers
+raise `ValueError`, and non-integers (including booleans) raise `TypeError`.
+Integer division and remainder preserve precision for large amounts without
+using floating-point arithmetic; `format_cents(9007199254740993)` returns
+`"90071992547409.93"` exactly. No currency symbol or grouping separator is added.
+Decimal output is assembled in small chunks, so even amounts exceeding Python's
+default integer-to-string digit limit work without changing global settings.
