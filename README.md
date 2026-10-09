@@ -153,6 +153,42 @@ public-facing production HTTP server.
 
 `GET /health` returns status `200` and `{"status":"ok"}`.
 
+For a first health check, use two terminals on the same computer. These commands
+use a POSIX shell, Python 3.12 available as `python3`, and `curl`:
+
+1. In the first terminal, from the repository root, start the existing service
+   on an OS-assigned port:
+
+   ```sh
+   python3 -B quote_server.py --port 0
+   ```
+
+   Keep this terminal running. Its first output line is the actual base URL,
+   for example `http://127.0.0.1:43127`. The number after the colon is the
+   selected port; it can change each time you start the service. Port `0` is
+   only a startup option, not the port to use in a request.
+
+2. In the second terminal, paste the following command. At the prompt, paste
+   the complete URL printed by your running server and press Enter. Use that
+   URL exactly, without adding a trailing slash or `/health`:
+
+   ```sh
+   printf 'Paste the server URL: '; IFS= read -r BASE_URL && \
+     curl --fail --silent --show-error --max-time 5 \
+       --write-out '\nHTTP %{http_code}\n' "$BASE_URL/health"
+   ```
+
+   Expected output after entering the URL:
+
+   ```text
+   {"status":"ok"}
+   HTTP 200
+   ```
+
+3. When finished, press Ctrl+C in the first terminal to stop only the server
+   you started. If `curl` cannot connect, check that this terminal is still
+   running and that you used its latest printed URL.
+
 `POST /quote` accepts a UTF-8 JSON object, with `Content-Length` supplied by your
 HTTP client. Example using the default port:
 
