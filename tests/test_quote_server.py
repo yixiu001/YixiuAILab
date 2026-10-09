@@ -219,12 +219,15 @@ class QuoteHTTPTests(unittest.TestCase):
 
 
 class QuoteCLITests(unittest.TestCase):
-    def test_can_start_from_another_directory_and_exit_cleanly(self):
+    def test_can_start_from_another_directory_and_stop_listening(self):
         with tempfile.TemporaryDirectory() as directory:
             process, port = start_service(self, cwd=directory)
+            self.assertIsNone(process.poll())
             process.terminate()
             stdout, stderr = process.communicate(timeout=5)
-            self.assertEqual(process.returncode, 0)
+            # CPython's Windows terminate uses TerminateProcess(..., 1).
+            expected_returncode = 1 if os.name == "nt" else 0
+            self.assertEqual(process.returncode, expected_returncode)
             self.assertEqual(stdout, "")
             self.assertEqual(stderr, "")
             with self.assertRaises(OSError):
