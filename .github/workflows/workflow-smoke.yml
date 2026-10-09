@@ -2,9 +2,9 @@ name: Workflow smoke
 
 on:
   pull_request:
-    branches: [develop]
+    branches: [develop, lab/final-realuse-integration-20261010]
   push:
-    branches: [develop]
+    branches: [develop, lab/final-realuse-integration-20261010]
 
 permissions:
   contents: read
