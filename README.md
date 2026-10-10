@@ -153,6 +153,27 @@ public-facing production HTTP server.
 
 `GET /health` returns status `200` and `{"status":"ok"}`.
 
+With the server running in the first terminal, open another Linux terminal.
+Paste the actual URL printed by the server at the prompt below (without a
+trailing slash); this also works when you started it with `--port 0`:
+
+```sh
+printf 'Paste the server URL: '
+IFS= read -r base_url
+curl --max-time 5 --silent --show-error \
+  --write-out '\nHTTP %{http_code}\n' "$base_url/health"
+```
+
+Expected curl output, showing the response body and HTTP status code:
+
+```text
+{"status":"ok"}
+HTTP 200
+```
+
+When finished, return to the first terminal and press Ctrl+C to stop the server
+you started. Leave other running services alone.
+
 `POST /quote` accepts a UTF-8 JSON object, with `Content-Length` supplied by your
 HTTP client. Example using the default port:
 
